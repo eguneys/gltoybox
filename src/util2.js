@@ -3,3 +3,7 @@ export function objMap(obj, f) {
     [_]: f(_, obj[_]),
     ...acc }), {});
 };
+
+export function objFind(obj, p) {
+  return Object.keys(obj).find(key => p(key, obj[key]));
+}

@@ -1,14 +1,18 @@
+import { objFind } from './util2';
+
 import * as u from './util';
 
 export function start(s, e) {
 
-  let position = u.eventPosition(e);
+  let position = eventPositionInBounds(e, s.bounds);
+  const nextIndex = getNextIndexAtPosition(s, position);
 
-  const shape = getShapeAtDomPos(position, s.bounds);
-  
-  s.draggable.current = {
-    epos: position
-  };
+  if (nextIndex) {
+    s.draggable.current = {
+      nextIndex,
+      epos: position
+    };
+  }
 };
 
 export function cancel(s, e) {
@@ -19,18 +23,51 @@ export function cancel(s, e) {
 };
 
 export function move(s, e) {
+  const cur = s.draggable.current;
 
-  if (s.draggable.current) {
-    s.draggable.current.epos = u.eventPosition(e);
+  if (cur) {
+    cur.epos = eventPositionInBounds(e, s.bounds);
+    const { tiles } = s.views.next[cur.nextIndex];
+
+    cur.tiles = tiles.map(_ => getTileKeyAtPosition(s, _));
   }
 
 };
 
-function getShapeAtDomPos(pos, bounds) {
-  const left = (pos[0] - bounds.left) / bounds.width,
-        top = (pos[1] - bounds.top) / bounds.height;
+function eventPositionInBounds(e, bounds) {
+  let position = u.eventPosition(e);
+  return [position[0] - bounds.left,
+          position[1] - bounds.top];
+}
 
-  console.log(left, top);
-  
+function getTileKeyAtPosition(s, pos) {
+  const views = s.views;
 
+  return objFind(views.tiles, (key, tile) => {
+    return isInside(tile, pos.x + pos.width * 0.5, pos.y + pos.height * 0.5);
+  });
+}
+
+
+function getNextIndexAtPosition(s, pos) {
+  const views = s.views,
+        left = pos[0],
+        top = pos[1];
+
+
+  return Object.keys(views.next).find(key => {
+    const { tiles } = views.next[key];
+
+    return tiles.some(box => {
+      if (isInside(box, left, top)) {
+        return true;
+      }
+      return false;
+    });
+  });
+}
+
+function isInside(box, x, y) {
+  return box.x < x && box.x + box.width > x &&
+    box.y < y && box.y + box.height > y;
 }

@@ -3,6 +3,12 @@ export const States = {
   Play: 'play'
 };
 
+// see ./shaders/empty.frag
+export const TileStates = {
+  Empty: 0,
+  Hilight: 1
+};
+
 export const PI = Math.PI;
 export const HALFPI = PI / 2;
 export const THIRDPI = PI / 3;

@@ -42,7 +42,7 @@ export function app(element, options) {
 
       new Loop(delta => {
         ctrl.update(delta);
-        view.render(ctrl);
+        ctrl.data.views = view.render(ctrl);
         graphics.render();
         view.release();
       }, 60).start();

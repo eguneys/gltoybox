@@ -11,7 +11,7 @@ export default function view(ctrl, g, assets) {
   const tiles = new tilesView(ctrl, g, assets);
 
   this.render = ctrl => {
-    tiles.render(ctrl);
+    return tiles.render(ctrl);
   };
 
   this.release = () => {

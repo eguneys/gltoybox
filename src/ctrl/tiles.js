@@ -24,19 +24,29 @@ export default function tiles(ctrl, g) {
     });
   };
 
-  this.dragBlock = (shape) => {
-    this.data.current = {
-      shape
-    };
+  const updateDragInfo = delta => {
+    
+    const cur = ctrl.data.draggable.current;
+
+    delete this.data.placeTiles;
+
+    if (cur) {
+      if (cur.tiles.every(canPlaceTile)) {
+        this.data.placeTiles = cur.tiles;
+      }
+    }
   };
 
-  this.releaseBlock = () => {
-    this.data.current = {};
+  const canPlaceTile = tile => {
+    if (!tile) return false;
+    return true;
   };
 
   this.update = delta => {
 
-    
+    updateDragInfo(delta);
+
+
 
   };
  

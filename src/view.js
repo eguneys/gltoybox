@@ -17,9 +17,10 @@ export default function view(ctrl, g, assets) {
   this.render = ctrl => {
 
     back.render(ctrl);
-    play.render(ctrl);
+    const views = play.render(ctrl);
     //ui.render(ctrl);
     //menu.render(ctrl);
+    return views;
   };
 
   this.release = () => {

@@ -1,5 +1,7 @@
 import Pool from '../pool';
 
+import * as G from '../graphics';
+
 import * as u from '../util';
 
 import * as gu from '../gutil';
@@ -7,29 +9,31 @@ import * as cu from '../ctrl/util';
 
 export default function view(ctrl, g, assets) {
 
-  const { width, height } = ctrl.data.game;
+  const { width, height, positions } = ctrl.data.game;
+
 
   const tileWidth = width * 0.05;
-  const gap = 3;
+  const tileGap = 3;
 
-  const tilesWidth = (tileWidth + gap) * cu.cols,
-        tilesHeight = (tileWidth + gap) * cu.rows;
+  const tilesWidth = (tileWidth + tileGap) * cu.cols,
+        tilesHeight = (tileWidth + tileGap) * cu.rows;
+
+
+  const tilesX = ((width * 0.8) - tilesWidth) * 0.5,
+        tilesY = (height - tilesHeight) * 0.5;
+
+  let nextX = tilesX + tilesWidth + 20,
+      nextY = tilesY + tilesHeight * 0.0;
 
   const letterScale = [tileWidth/10, -tileWidth/10];
-
-  const x = ((width * 0.8) - tilesWidth) * 0.5,
-        y = (height - tilesHeight) * 0.5;
-
-  const nX = x + tilesWidth + 20,
-        nY = y + tilesHeight * 0.0;
-
-  const letterOffset = 16;
 
   const emptyPool = new Pool(id =>
     gu.makeQuad(g, {
       name: 'empty' + id,
       program: 'tile',
-      uniforms: {},
+      uniforms: {
+        uState: G.makeUniform1fSetter("uState")
+      },
       width: tileWidth,
       height: tileWidth
     })
@@ -41,11 +45,24 @@ export default function view(ctrl, g, assets) {
 
   const letters = ['a', 'b', 'c', 'k'];
 
-  const renderNext = (shape, y) => {
+  const renderNext = (ctrl, shape, i) => {
+    const y = i * tileWidth * 4;
+
+    const tiles = [];
+
+    let curDrag = ctrl.data.draggable.current,
+        tileX = nextX,
+        tileY = nextY + y;
+
+    if (curDrag && curDrag.nextIndex == i) {
+      tileX = curDrag.epos[0] - tileWidth * 2.0;
+      tileY = curDrag.epos[1] - tileWidth * 1.0;
+    }
+
 
     shape.forEach(({ pos, color }) => {
-      const tX = nX + pos[0] * (tileWidth + gap),
-            tY = nY + pos[1] * (tileWidth + gap) + y;
+      const tX = tileX + pos[0] * (tileWidth + tileGap),
+            tY = tileY + pos[1] * (tileWidth + tileGap);
 
       let empty = emptyPool.acquire();
 
@@ -53,7 +70,9 @@ export default function view(ctrl, g, assets) {
         translation: [tX, tY],
         width: tileWidth,
         height: tileWidth
-      }, {});
+      }, {
+        uState: [u.TileStates.Empty]
+      });
 
       let letter = letterPool.acquire();
 
@@ -61,27 +80,53 @@ export default function view(ctrl, g, assets) {
         translation: [tX + tileWidth * 0.4, tY + tileWidth * 0.4],
         scale: letterScale
       });
+
+      tiles.push({
+        x: tX, 
+        y: tY,
+        width: tileWidth,
+        height: tileWidth
+      });
     });
+
+    return { tiles };
   };
 
   this.render = ctrl => {
-    ctrl = ctrl.play.tiles;
+    const tileCtrl = ctrl.play.tiles;
 
-    ctrl.data.next.forEach((next, i) => {
-      const y = i * tileWidth * 4;
-      renderNext(next, y);
-    });
+    const res = {
+      tiles: {},
+      next: []
+    };
 
     cu.allPos.forEach(pos => {
       let key = cu.pos2key(pos);
 
       let empty = emptyPool.acquire();
-      let tX = x + pos[0] * (tileWidth + gap),
-          tY = y + pos[1] * (tileWidth + gap);
+      let tX = tilesX + pos[0] * (tileWidth + tileGap),
+          tY = tilesY + pos[1] * (tileWidth + tileGap);
+
+      let state = u.TileStates.Empty;
+
+      let placeTiles = tileCtrl.data.placeTiles;
+
+      if (placeTiles && placeTiles.includes(key)) {
+        state = u.TileStates.Hilight;
+      }
 
       empty({
         translation: [tX, tY]
-      }, {});
+      }, {
+        uState: [state]
+      });
+
+      res.tiles[key] = {
+        x: tX, 
+        y: tY,
+        width: tileWidth,
+        height: tileWidth
+      };
 
       // let letter = letterPool.acquire();
 
@@ -91,6 +136,13 @@ export default function view(ctrl, g, assets) {
       // });
       
     });
+
+
+    tileCtrl.data.next.forEach((next, i) => {
+      res.next[i] = renderNext(ctrl, next, i);
+    });
+
+    return res;
   };
 
   this.release = () => {
