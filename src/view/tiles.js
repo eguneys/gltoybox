@@ -44,7 +44,54 @@ export default function view(ctrl, g, assets) {
     gu.makeTextDraw(g, assets['glyps'])
   );
 
-  const letters = ['a', 'b', 'c', 'k'];
+  const restartWidth = width * 0.25,
+        restartHeight = tileWidth;
+
+  const restartBgQuad = gu.makeQuad(g, {
+    program: 'tile',
+    uniforms: {
+      uState: G.makeUniform1fSetter("uState")
+    },
+    width: restartWidth,
+    height: restartHeight
+  });
+
+  const renderRestart = (ctrl) => {
+
+    const restartX = width * 0.70,
+          restartY = height * 0.88;
+
+    let restartState = u.TileStates.Empty;
+    const restartBg = emptyPool.acquire();
+
+    if (ctrl.data.draggable.restart) {
+      restartState = u.TileStates.Hilight;
+    }
+
+    restartBgQuad({
+      translation: [restartX,
+                    restartY],
+      width: restartWidth,
+      height: restartHeight
+    }, {
+      uState: [restartState]
+    });
+
+
+    const restartQ = letterPool.acquire();
+
+    restartQ('restart', {
+      translation: [restartX + 95, restartY + 20],
+      scale: [4.295, -4.295]
+    }, {});
+
+    return {
+      x: restartX,
+      y: restartY,
+      width: restartWidth,
+      height: restartHeight
+    };
+  };
 
   const renderNext = (ctrl, shape, i) => {
     const y = i * tileWidth * 5;
@@ -60,9 +107,11 @@ export default function view(ctrl, g, assets) {
       tileY = curDrag.epos[1] - tileWidth * 1.0;
     }
 
+    const { color } = shape;
 
-    shape.tiles.forEach(tile => {
-      const { pos, color, letter } = tile;
+    shape.tiles.forEach((pos, i) => {
+      const letter = shape.letters[i];
+
       const tX = tileX + pos[0] * (tileWidth + tileGap),
             tY = tileY + pos[1] * (tileWidth + tileGap);
 
@@ -84,7 +133,7 @@ export default function view(ctrl, g, assets) {
       });
 
       tiles.push({
-        tile,
+        i,
         x: tX, 
         y: tY,
         width: tileWidth,
@@ -130,11 +179,13 @@ export default function view(ctrl, g, assets) {
 
       if (tile && tile.letter) {
 
+        let popLetterScale = [1.0, 1.0];
+
         let letter = letterPool.acquire();
 
         letter(tile.letter, {
           translation: [tX + letterOffset, tY + letterOffset],
-          scale: letterScale
+          scale: mul(letterScale, popLetterScale)
         });
       }
       
@@ -155,6 +206,8 @@ export default function view(ctrl, g, assets) {
       res.next[i] = renderNext(ctrl, next, i);
     });
 
+    res.restart = renderRestart(ctrl);
+
     return res;
   };
 
@@ -164,3 +217,7 @@ export default function view(ctrl, g, assets) {
   };
   
 }
+
+function mul(v1, v2) {
+  return [v1[0] * v2[0], v1[1] * v2[1]];
+};

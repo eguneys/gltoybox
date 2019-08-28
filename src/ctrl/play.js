@@ -17,18 +17,11 @@ export default function ctrl(ctrl, g) {
     this.tiles.init();    
   };
 
-  this.spaceHit = () => {
-
+  this.reset = () => {
+    this.init();
   };
 
-  const maybeEndPlay = delta => {
-    if (this.data.gameover > 0) {
-      u.ensureDelay(this.data.gameover, () => {
-        this.data.gameover = 0;
-        this.data.state = u.States.Over;
-      }, 1000);
-    }
-  };
+  
 
   const maybeIncreaseLevel = u.withDelay(() => {
     if (this.data.gameover === 0) {
@@ -44,7 +37,6 @@ export default function ctrl(ctrl, g) {
 
     maybeIncreaseLevel(delta);
     maybeUpdateScore(delta);
-    maybeEndPlay(delta);
 
     this.tiles.update(delta);
   };

@@ -18,6 +18,7 @@ const mat3 = {
                            mat3.projection(projection[0],
                                            projection[1]));
 
+
     matrix = mat3.multiply(matrix,
                            mat3.translation(translation[0],
                                             translation[1]));

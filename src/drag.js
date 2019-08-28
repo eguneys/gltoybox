@@ -14,6 +14,12 @@ export function start(ctrl, e) {
       epos: position
     };
   }
+
+  const restart = getRestartAtPosition(s, position);
+
+  if (restart) {
+    ctrl.play.reset();
+  }
 };
 
 export function cancel(ctrl, e) {
@@ -30,17 +36,25 @@ export function move(ctrl, e) {
   let s = ctrl.data;
 
   const cur = s.draggable.current;
+  const position = eventPositionInBounds(e, s.bounds);
 
   if (cur) {
-    cur.epos = eventPositionInBounds(e, s.bounds);
+    cur.epos = position;
     const { tiles } = s.views.next[cur.nextIndex];
 
     cur.tiles = tiles.map(_ => ({
       key: getTileKeyAtPosition(s, _),
-      tile: _.tile
+      tileI: _.i
     }));
   }
 
+  const restart = getRestartAtPosition(s, position);
+
+  if (restart) {
+    s.draggable.restart = true;
+  } else {
+    s.draggable.restart = false;
+  }
 };
 
 function eventPositionInBounds(e, bounds) {
@@ -57,12 +71,27 @@ function getTileKeyAtPosition(s, pos) {
   });
 }
 
+function getRestartAtPosition(s, pos) {
+  const views = s.views;
+
+  if (!views) {
+    return false;
+  }
+
+  if (isInside(views.restart, pos[0], pos[1])) {
+    return true;
+  }
+  return false;
+}
 
 function getNextIndexAtPosition(s, pos) {
   const views = s.views,
         left = pos[0],
         top = pos[1];
 
+  if (!s.views) {
+    return null;
+  }
 
   return Object.keys(views.next).find(key => {
     const { tiles } = views.next[key];
