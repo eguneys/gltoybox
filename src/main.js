@@ -3,7 +3,6 @@ import defaults from './state';
 import { programMap } from './shaders';
 
 import Assets from './assets';
-import textures from './textures';
 
 import Graphics from './graphics';
 import makeView from './view';

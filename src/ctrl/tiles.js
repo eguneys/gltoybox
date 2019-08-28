@@ -34,9 +34,11 @@ export default function tiles(ctrl, g) {
       
       let {shape} = this.data.next[nextI];
 
-      shape = cu.rotateShape(shape);
-      this.data.next[nextI].shape = shape;
-      this.data.next[nextI].tiles = cu.shapeToPosMap(shape);
+      //shape = cu.rotateShape(shape);
+      //this.data.next[nextI].shape = shape;
+      //this.data.next[nextI].tiles = cu.shapeToPosMap(shape);
+      this.data.next[nextI] = shapeToPosInfo(cu.getShape(cu.randomShapeKey()));
+
     }
   };
 
@@ -88,7 +90,7 @@ export default function tiles(ctrl, g) {
               fulls[1].letter === 'c' &&
               fulls[2].letter === 'k') {
            
-            [...mvs, b].forEach(_ => delete this.data.tiles[_]); 
+            [...mvs, b].forEach(_ => delete this.data.tiles[_]);y 
           }
         });
     });

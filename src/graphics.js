@@ -265,16 +265,19 @@ export function makeBufferInfoForAttribute(name, size) {
   };
 };
 
-export const makeUniform1iSetter = (name, args) => (gl, program) => () => gl.uniform1i(gl.getUniformLocation(program, name), args);
 
-export const makeUniform1fSetter = name => (gl, program) => (...args) => gl.uniform1f(gl.getUniformLocation(program, name), ...args);
+const withGLLocation = f => name => (gl, program) => {
+  return f(gl, gl.getUniformLocation(program, name));
+};
+
+export const makeUniform1fSetter = withGLLocation((gl, location) => (...args) => gl.uniform1f(location, ...args));
 
 
-export const makeUniform2fSetter = name => (gl, program) => (...args) => gl.uniform2f(gl.getUniformLocation(program, name), ...args);
+export const makeUniform2fSetter = withGLLocation((gl, location) => (...args) => gl.uniform2f(location, ...args));
 
-export const makeUniform2fvSetter = name => (gl, program) => (vec) => gl.uniform2fv(gl.getUniformLocation(program, name), vec);
+export const makeUniform2fvSetter = withGLLocation((gl, location) => (vec) => gl.uniform2fv(location, vec));
 
-export const makeUniform3fvSetter = name => (gl, program) => (matrix) => gl.uniformMatrix3fv(gl.getUniformLocation(program, name), false, matrix);
+export const makeUniform3fvSetter = withGLLocation((gl, location) => (matrix) => gl.uniformMatrix3fv(location, false, matrix));
 
 
 const makeProgram = (gl, vSource, fSource) => {
