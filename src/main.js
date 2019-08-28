@@ -1,5 +1,7 @@
 import defaults from './state';
 
+import { programMap } from './shaders';
+
 import Assets from './assets';
 import textures from './textures';
 
@@ -28,10 +30,12 @@ export function app(element, options) {
 
       const state = {
         ...defaults(displayWidth, displayHeight),
-        textures: textures()
+        bounds: canvas.getBoundingClientRect()
       };
 
       let graphics = new Graphics(state, gl);
+
+      graphics.makePrograms(programMap);
 
       let ctrl = new makeCtrl(state, graphics);
       let view = new makeView(ctrl, graphics, assets);
@@ -54,13 +58,15 @@ export function app(element, options) {
             console.log(e);
           }
         });
-        module.hot.accept('./view', function() {
-          try {
-            view = new makeView(ctrl, graphics);
-          } catch (e) {
-            console.log(e);
-          }
-        });
+        module.hot.accept
+        (['./view'], function() 
+         {
+           try {
+             view = new makeView(ctrl, graphics, assets);
+           } catch (e) {
+             console.log(e);
+           }
+         });
       }
     });
 }

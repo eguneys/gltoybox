@@ -11,8 +11,7 @@ export function makeTextDraw(g, texture) {
         texInfo = new G.makeBufferInfoForAttribute("aTexCoord", 2);
 
   let dInfo = g.makeDraw({
-    vSource: shaderMap['vfont'],
-    fSource: shaderMap['ftexture'],
+    program: 'font',
     bufferInfos: [
       posInfo,
       texInfo
@@ -42,12 +41,33 @@ export function makeTextDraw(g, texture) {
   };
 }
 
+export function makeQuad(g, {
+  name,
+  program,
+  uniforms,
+  width,
+  height
+}) {
+  let dInfo = g.makeQuad({
+    name,
+    program,
+    uniforms: {
+      uMatrix: G.makeUniform3fvSetter("uMatrix"),
+      uResolution: G.makeUniform2fSetter("uResolution"),
+      ...uniforms
+    }
+  }, width, height);
+
+  return (props, uniforms) => {
+    g.addQuad(dInfo, props, uniforms);
+  };
+}
+
 export function makeSprite(g, width, height) {
   const textureInfo = new G.makeTextureInfoForUniform("uTexture");
 
   let dInfo = g.makeQuad({
-    vSource: shaderMap['vtexture'],
-    fSource: shaderMap['ftexture'],
+    program: 'sprite',
     textureInfos: [textureInfo],
     uniforms: {
       uMatrix: G.makeUniform3fvSetter("uMatrix")

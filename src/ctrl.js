@@ -6,7 +6,8 @@ import makePlay from './ctrl/play';
 
 export default function ctrl(state, g) {
   const defaults = () => ({
-    tick: 0
+    tick: 0,
+    draggable: {}
   });
 
   this.data = { ...defaults(), ...state };

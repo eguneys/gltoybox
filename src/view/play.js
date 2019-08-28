@@ -1,32 +1,21 @@
 import * as u from '../util';
-import shaderMap from '../shaders';
 
 import * as G from '../graphics';
 
-import heroView from './hero';
-import wallsView from './walls';
-import blocksView from './blocks';
+import tilesView from './tiles';
 
-export default function view(ctrl, g) {
+export default function view(ctrl, g, assets) {
 
   const { width, height } = ctrl.data;
 
-  const hero = new heroView(ctrl, g);
-  const walls = new wallsView(ctrl, g);
-  const blocks = new blocksView(ctrl, g);
+  const tiles = new tilesView(ctrl, g, assets);
 
   this.render = ctrl => {
-    walls.render(ctrl);
-    blocks.render(ctrl);
-
-    hero.render(ctrl);
-
+    tiles.render(ctrl);
   };
 
   this.release = () => {
-    walls.release();
-    blocks.release();
-    hero.release();
+    tiles.release();
   };
 
 }

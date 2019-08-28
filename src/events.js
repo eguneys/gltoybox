@@ -1,13 +1,17 @@
 import { Moves } from './ctrl';
 
+import * as drag from './drag';
+
 export function bindDocument(ctrl) {
   const unbinds = [];
 
-  const onKeyDown = startMove(ctrl);
-  const onKeyUp = endMove(ctrl);
+  const onMouseDown = withEvent(ctrl, drag.start),
+        onMouseUp = withEvent(ctrl, drag.cancel),
+        onMouseMove = withEvent(ctrl, drag.move);
 
-  unbinds.push(unbindable(document, 'keydown', onKeyDown));
-  unbinds.push(unbindable(document, 'keyup', onKeyUp));
+  unbinds.push(unbindable(document, 'mousedown', onMouseDown));
+  unbinds.push(unbindable(document, 'mouseup', onMouseUp));
+  unbinds.push(unbindable(document, 'mousemove', onMouseMove));
 
   return () => { unbinds.forEach(_ => _()); };
 
@@ -18,24 +22,8 @@ function unbindable(el, eventName, callback) {
   return () => el.removeEventListener(eventName, callback);
 }
 
-function endMove(ctrl) {
+function withEvent(ctrl, withDrag) {
   return function(e) {
-    switch (e.code) {
-    case 'Space':
-      ctrl.spaceRelease();
-    }
-  };
-}
-
-function startMove(ctrl) {
-  return function(e) {
-    switch(e.code) {
-    case 'Space':
-      ctrl.spaceHit();
-      break;
-    default:
-      return;
-    }
-    e.preventDefault();
+    withDrag(ctrl.data, e);
   };
 }

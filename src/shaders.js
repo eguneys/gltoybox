@@ -1,13 +1,12 @@
 import { objMap } from './util2';
 
 import vMainShader from './shaders/main.vert';
-import fHeroShader from './shaders/hero.frag';
-import fWallShader from './shaders/wall.frag';
 import vTextureShader from './shaders/texture.vert';
 import fTextureShader from './shaders/texture.frag';
 import vFontShader from './shaders/font.vert';
 
 import fBackgroundShader from './shaders/background.frag';
+import fEmptyShader from './shaders/empty.frag';
 
 import pFColorsShader from './shaders/colors.partial.frag';
 import pFDefsShader from './shaders/defs.partial.frag';
@@ -27,8 +26,7 @@ const partialShaders = {
 const rawShaders = {
   'vmain': vMainShader,
   'vfont': vFontShader,
-  'fhero': fHeroShader,
-  'fwall': fWallShader,
+  'fempty': fEmptyShader,
   'vtexture': vTextureShader,
   'ftexture': fTextureShader,
   'fbg': fBackgroundShader
@@ -39,6 +37,18 @@ const regexInclude = /#include (\w+)/;
 
 const shaderMap = objMap(rawShaders,
                          (_, v) => process(v));
+
+const shaderPair = (fSource, vSource='vmain') => ({
+  vSource: shaderMap[vSource],
+  fSource: shaderMap[fSource]
+});
+
+export const programMap = ({
+  'texture': shaderPair('ftexture'),
+  'font': shaderPair('ftexture', 'vfont'),
+  'background': shaderPair('fbg'),
+  'tile': shaderPair('fempty')
+});
 
 
 function process(source) {

@@ -1,7 +1,7 @@
 export default function Pool(makeItem, opts) {
   const defaults = () => ({
     name: 'pool',
-    warnLeak: 50
+    warnLeak: 400
   });
 
   opts = { ...defaults(), ...opts };

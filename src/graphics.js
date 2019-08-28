@@ -1,5 +1,3 @@
-import shaderMap from './shaders';
-
 import { objMap } from './util2';
 import * as u from './util';
 
@@ -18,6 +16,18 @@ export default function Graphics(state, gl) {
   this.gl = gl;
 
   this.minibatch = [];
+
+  this.prCache = {};
+
+  this.makePrograms = (prs) => {
+    
+    Object.keys(prs).forEach(key => {
+      let { vSource, fSource } = prs[key];
+
+      this.prCache[key] = makeProgram(gl, vSource, fSource);
+    });
+
+  };
 
   this.addTexture = (quad, props = {}, uniforms = {}) => {
     addQuad(quad, {
@@ -76,16 +86,6 @@ export default function Graphics(state, gl) {
     this.minibatch.push({...quad, uniforms: cookUniforms, numVertices });
   };
 
-
-  const makeProgram = (vSource, fSource) => {
-    let vShader = createShader(gl, gl.VERTEX_SHADER, vSource);
-    let fShader = createShader(gl, gl.FRAGMENT_SHADER, fSource);
-
-    let program = createProgram(gl, vShader, fShader);
-
-    return program;
-  };
-
   this.makeQuad = (drawInfo,
                    width,
                    height) =>
@@ -132,16 +132,14 @@ export default function Graphics(state, gl) {
 
   this.makeDraw = ({
     name,
-    vSource,
-    fSource,
+    program,
     uniforms,
     textureInfos,
     bufferInfos
   }) => {
-    vSource = vSource || shaderMap['vmain'];
-    textureInfos = textureInfos || [];
 
-    let program = makeProgram(vSource, fSource);
+    program = this.prCache[program];
+    textureInfos = textureInfos || [];
 
     let vao = makeVao(gl, bufferInfos.map(_ => _.apply(gl, program)));
 
@@ -277,6 +275,16 @@ export const makeUniform2fSetter = name => (gl, program) => (...args) => gl.unif
 export const makeUniform2fvSetter = name => (gl, program) => (vec) => gl.uniform2fv(gl.getUniformLocation(program, name), vec);
 
 export const makeUniform3fvSetter = name => (gl, program) => (matrix) => gl.uniformMatrix3fv(gl.getUniformLocation(program, name), false, matrix);
+
+
+const makeProgram = (gl, vSource, fSource) => {
+  let vShader = createShader(gl, gl.VERTEX_SHADER, vSource);
+  let fShader = createShader(gl, gl.FRAGMENT_SHADER, fSource);
+
+  let program = createProgram(gl, vShader, fShader);
+
+  return program;
+};
 
 function createShader(gl, type, source) {
   let shader = gl.createShader(type);

@@ -1,5 +1,3 @@
-import shaderMap from '../shaders';
-
 import * as u from '../util';
 
 import * as G from '../graphics';
@@ -15,7 +13,7 @@ export default function view(ctrl, g) {
   const { width, height } = ctrl.data.game;
 
   const background = g.makeQuad({
-    fSource: shaderMap['fbg'],
+    program: 'background',
     uniforms: {
       uTime: G.makeUniform1fSetter("uTime"),
       uMatrix: G.makeUniform3fvSetter("uMatrix"),

@@ -9,17 +9,16 @@ export default function view(ctrl, g, assets) {
 
   const { width, height } = ctrl.data;
 
-
   const back = new backView(ctrl, g);
   const ui = new uiView(ctrl, g, assets);
-  const play = new playView(ctrl, g);
+  const play = new playView(ctrl, g, assets);
   const menu = new menuView(ctrl, g);
 
   this.render = ctrl => {
 
     back.render(ctrl);
     play.render(ctrl);
-    ui.render(ctrl);
+    //ui.render(ctrl);
     //menu.render(ctrl);
   };
 

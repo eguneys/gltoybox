@@ -67,14 +67,14 @@ vec2 opRep(vec2 p, vec2 c)
 //   return screen;
 // }
 
-mat3 affineMatrix(vec2 translation, float rotation) {
-  return mat3(cos(rotation), -sin(rotation), 0.0,
-              sin(rotation), cos(rotation), 0.0,
+mat3 affineMatrix(vec2 translation, float rotation, float scale) {
+  return mat3(scale * cos(rotation), -sin(rotation), 0.0,
+              sin(rotation), scale * cos(rotation), 0.0,
               translation.x, translation.y, 1.0);
 }
 
 vec2 transform(vec2 p, vec2 trans, float rotate, float scale) {
-  return (-inverse(affineMatrix(trans, rotate)) * vec3(p, 1.0)).xy;
+  return (-inverse(affineMatrix(trans, rotate, scale)) * vec3(p, 1.0)).xy;
 }
 
 
