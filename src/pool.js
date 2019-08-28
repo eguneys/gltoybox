@@ -29,6 +29,7 @@ export default function Pool(makeItem, opts) {
     let item;
     if (this.total() > this.warnLeak()) {
       console.warn(`possible pool leak at ${this.name()}.`);
+      return null;
     }
     if (dead.length > 0) {
       item = dead.pop();

@@ -24,6 +24,6 @@ function unbindable(el, eventName, callback) {
 
 function withEvent(ctrl, withDrag) {
   return function(e) {
-    withDrag(ctrl.data, e);
+    withDrag(ctrl, e);
   };
 }

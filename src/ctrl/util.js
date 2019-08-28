@@ -83,6 +83,9 @@ function readShape(shape) {
   return poss;
 }
 
+export const letters = ['b', 'a', 'c', 'k'];
+export const randomLetter = () => letters[Math.floor(Math.random() * letters.length)];
+
 export const randomShapeKey = () => allShapeKeys[Math.floor(Math.random() * allShapeKeys.length)];
 
 export const colors = { l: 'blue', r: 'orange', i: 'cyan', s: 'red', z: 'green', o: 'yellow', t: 'purple'  };

@@ -15,13 +15,36 @@ export default function tiles(ctrl, g) {
     };
   };
 
+  this.commitTile = () => {
+    const nextI = ctrl.data.draggable.current.nextIndex;
+
+    if (this.data.placeTiles) {
+      this.data.placeTiles.forEach(({ key, tile }) => {
+        this.data.tiles[key] = {
+          letter: tile.letter
+        };
+      });
+
+      this.data.next[nextI] = shapeToPosInfo(cu.getShape(cu.randomShapeKey()));
+    } else {
+      
+      // const {shape} = this.data.next[nextI];
+
+      //this.data.next[nextI] = shapeToPosInfo(cu.rotateShape(shape));
+    }
+  };
+
   const shapeToPosInfo = (shape) => {
-    return cu.shapeToPosMap(shape).map(pos => {
-      return {
-        color: shape.color,
-        pos
-      };
-    });
+    return {
+      shape,
+      tiles: cu.shapeToPosMap(shape).map(pos => {
+        return {
+          color: shape.color,
+          letter: cu.randomLetter(),
+          pos
+        };
+      })
+    };
   };
 
   const updateDragInfo = delta => {
@@ -30,7 +53,7 @@ export default function tiles(ctrl, g) {
 
     delete this.data.placeTiles;
 
-    if (cur) {
+    if (cur && cur.tiles) {
       if (cur.tiles.every(canPlaceTile)) {
         this.data.placeTiles = cur.tiles;
       }
@@ -39,6 +62,10 @@ export default function tiles(ctrl, g) {
 
   const canPlaceTile = tile => {
     if (!tile) return false;
+
+    if (this.data.tiles[tile.key]) {
+      return false;
+    }
     return true;
   };
 

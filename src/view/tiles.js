@@ -25,7 +25,8 @@ export default function view(ctrl, g, assets) {
   let nextX = tilesX + tilesWidth + 20,
       nextY = tilesY + tilesHeight * 0.0;
 
-  const letterScale = [tileWidth/10, -tileWidth/10];
+  const letterScale = [tileWidth/10, -tileWidth/10],
+        letterOffset = 16;
 
   const emptyPool = new Pool(id =>
     gu.makeQuad(g, {
@@ -46,7 +47,7 @@ export default function view(ctrl, g, assets) {
   const letters = ['a', 'b', 'c', 'k'];
 
   const renderNext = (ctrl, shape, i) => {
-    const y = i * tileWidth * 4;
+    const y = i * tileWidth * 5;
 
     const tiles = [];
 
@@ -60,7 +61,8 @@ export default function view(ctrl, g, assets) {
     }
 
 
-    shape.forEach(({ pos, color }) => {
+    shape.tiles.forEach(tile => {
+      const { pos, color, letter } = tile;
       const tX = tileX + pos[0] * (tileWidth + tileGap),
             tY = tileY + pos[1] * (tileWidth + tileGap);
 
@@ -74,14 +76,15 @@ export default function view(ctrl, g, assets) {
         uState: [u.TileStates.Empty]
       });
 
-      let letter = letterPool.acquire();
+      let letterQ = letterPool.acquire();
 
-      letter('b', {
+      letterQ(letter, {
         translation: [tX + tileWidth * 0.4, tY + tileWidth * 0.4],
         scale: letterScale
       });
 
       tiles.push({
+        tile,
         x: tX, 
         y: tY,
         width: tileWidth,
@@ -92,16 +95,13 @@ export default function view(ctrl, g, assets) {
     return { tiles };
   };
 
-  this.render = ctrl => {
+  const renderTiles = ctrl => {
+    const tiles = {};
     const tileCtrl = ctrl.play.tiles;
-
-    const res = {
-      tiles: {},
-      next: []
-    };
 
     cu.allPos.forEach(pos => {
       let key = cu.pos2key(pos);
+      let tile = tileCtrl.data.tiles[key];
 
       let empty = emptyPool.acquire();
       let tX = tilesX + pos[0] * (tileWidth + tileGap),
@@ -111,7 +111,7 @@ export default function view(ctrl, g, assets) {
 
       let placeTiles = tileCtrl.data.placeTiles;
 
-      if (placeTiles && placeTiles.includes(key)) {
+      if (placeTiles && placeTiles.some(_ => _.key === key)) {
         state = u.TileStates.Hilight;
       }
 
@@ -121,22 +121,35 @@ export default function view(ctrl, g, assets) {
         uState: [state]
       });
 
-      res.tiles[key] = {
+      tiles[key] = {
         x: tX, 
         y: tY,
         width: tileWidth,
         height: tileWidth
       };
 
-      // let letter = letterPool.acquire();
+      if (tile && tile.letter) {
 
-      // letter('a', {
-      //   translation: [tX + letterOffset, tY + letterOffset],
-      //   scale: tileScale
-      // });
+        let letter = letterPool.acquire();
+
+        letter(tile.letter, {
+          translation: [tX + letterOffset, tY + letterOffset],
+          scale: letterScale
+        });
+      }
       
     });
+    return tiles;
+  };
 
+  this.render = ctrl => {
+    const tileCtrl = ctrl.play.tiles;
+
+    const res = {
+      next: []
+    };
+
+    res.tiles = renderTiles(ctrl);
 
     tileCtrl.data.next.forEach((next, i) => {
       res.next[i] = renderNext(ctrl, next, i);
